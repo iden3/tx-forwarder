@@ -1,9 +1,8 @@
 server:
-  serviceapi: 0.0.0.0:11000
+        serviceapi: 0.0.0.0:11000
 web3:
-  url: http://127.0.0.1:8545
+        url: http://127.0.0.1:8545
 keystore:
-  path: /var/config/keystore
-  address: 0x7277273f3fa62dfa238828934
-  passwd: /var/config/keystore.password
-
+        path: /var/config/keystore
+        address: 0x7277273f3fa62dfa238828934
+        passwd: /var/config/keystore.password

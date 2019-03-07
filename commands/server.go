@@ -1,7 +1,7 @@
 package commands
 
 import (
-	cfg "github.com/iden3/gas-station/config"
+	"github.com/iden3/gas-station/config"
 	"github.com/iden3/gas-station/endpoint"
 	"github.com/urfave/cli"
 )
@@ -28,24 +28,26 @@ var ServerCommands = []cli.Command{
 }
 
 func cmdStart(c *cli.Context) error {
-	if err := cfg.MustRead(c); err != nil {
+	if err := config.MustRead(c); err != nil {
 		return err
 	}
 
-	endpoint.Serve()
+	ks, acc := config.LoadKeyStore()
+	ethsrv := config.LoadWeb3(ks, &acc)
+	endpoint.Serve(ethsrv)
 
 	return nil
 }
 
 func cmdStop(c *cli.Context) error {
-	if err := cfg.MustRead(c); err != nil {
+	if err := config.MustRead(c); err != nil {
 		return err
 	}
 	return nil
 }
 
 func cmdInfo(c *cli.Context) error {
-	if err := cfg.MustRead(c); err != nil {
+	if err := config.MustRead(c); err != nil {
 		return err
 	}
 	return nil

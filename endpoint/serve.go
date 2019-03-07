@@ -8,14 +8,17 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/iden3/gas-station/config"
+	"github.com/iden3/gas-station/eth"
 
 	"github.com/gin-gonic/gin"
 
 	log "github.com/sirupsen/logrus"
 )
 
+var ethsrv *eth.EthService
+
 func init() {
-	gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 }
 
 func serveServiceApi() *http.Server {
@@ -36,7 +39,8 @@ func serveServiceApi() *http.Server {
 	return serviceapisrv
 }
 
-func Serve() {
+func Serve(ethservice *eth.EthService) {
+	ethsrv = ethservice
 
 	stopch := make(chan interface{})
 
