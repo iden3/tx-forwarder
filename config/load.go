@@ -66,7 +66,7 @@ func LoadWeb3(ks *keystore.KeyStore, acc *accounts.Account) *eth.EthService {
 	if hidden {
 		url = url[len("hidden:"):]
 	}
-	ethsrv := eth.NewEthService(url, ks, acc)
+	ethsrv := eth.NewEthService(url, ks, acc, C.KeyStore.Path, C.KeyStore.Password)
 	if hidden {
 		log.WithField("url", "(hidden)").Info("Connection to web3 server opened")
 	} else {

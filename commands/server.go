@@ -33,8 +33,8 @@ func cmdStart(c *cli.Context) error {
 	}
 
 	ks, acc := config.LoadKeyStore()
-	ethsrv := config.LoadWeb3(ks, &acc)
-	endpoint.Serve(ethsrv)
+	ethSrv := config.LoadWeb3(ks, &acc)
+	endpoint.Serve(ethSrv)
 
 	return nil
 }
