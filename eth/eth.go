@@ -2,6 +2,7 @@ package eth
 
 import (
 	"context"
+	"encoding/hex"
 	"io/ioutil"
 	"math"
 	"math/big"
@@ -12,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	contracts "github.com/iden3/tx-forwarder/eth/contracts"
 	log "github.com/sirupsen/logrus"
@@ -115,4 +117,43 @@ func (ethSrv *EthService) GetAuth() (*bind.TransactOpts, error) {
 	}
 	auth, err := bind.NewTransactor(strings.NewReader(string(b)), string(passw))
 	return auth, err
+}
+
+type TxMsg struct {
+	Addr string `json:"addr"`
+	Data string `json:"dataHex"`
+}
+
+func (ethSrv *EthService) ForwardTx(tx TxMsg) (*types.Transaction, error) {
+	nonce, err := ethSrv.Client().PendingNonceAt(context.Background(), ethSrv.acc.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	gasPrice, err := ethSrv.Client().SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := ethSrv.GetAuth()
+	if err != nil {
+		return nil, err
+	}
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)     // in wei
+	auth.GasLimit = uint64(300000) // in units
+	auth.GasPrice = gasPrice
+
+	data, err := hex.DecodeString(tx.Data[:2])
+	if err != nil {
+		return nil, err
+	}
+	var data32 [32]byte
+	copy(data32[:], data)
+
+	ethTx, err := ethSrv.SampleContract.AddAllowed(auth, common.HexToAddress(tx.Addr), data32)
+	if err != nil {
+		return nil, err
+	}
+	return ethTx, nil
 }

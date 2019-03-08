@@ -28,6 +28,7 @@ func serveServiceApi() *http.Server {
 
 	serviceapi := api.Group("/api/unstable")
 	serviceapi.GET("/", handleGetInfo)
+	serviceapi.POST("/tx", handlePostTx)
 
 	serviceapisrv := &http.Server{Addr: config.C.Server.ServiceApi, Handler: api}
 	go func() {

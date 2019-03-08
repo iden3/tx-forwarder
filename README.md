@@ -1,6 +1,5 @@
-# Gas Station
-Server that pays gas for client signed transactions for specified smart contracts in ethereum blockchain.
-
+# tx-forwarder
+Server that forwards the tx to the specified smart contract.
 
 
 ## Usage
@@ -8,7 +7,7 @@ Server that pays gas for client signed transactions for specified smart contract
 ### Config
 Deploy contract:
 ```
-./gas-station deploy
+./tx-forwarder deploy
 ```
 This will print the deployed contract address, then copy&paste in the config file `config.yaml`:
 ```
@@ -28,7 +27,7 @@ contracts:
 ### Run
 Then, run the server:
 ```
-./gas-station start
+./tx-forwarder start
 ```
 
 ### Contract
