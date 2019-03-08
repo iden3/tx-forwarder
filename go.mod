@@ -1,4 +1,4 @@
-module github.com/iden3/gas-station
+module github.com/iden3/tx-forwarder
 
 go 1.12
 

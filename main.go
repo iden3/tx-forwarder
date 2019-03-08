@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/iden3/gas-station/commands"
+	"github.com/iden3/tx-forwarder/commands"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/urfave/cli"
@@ -12,7 +12,7 @@ import (
 func main() {
 
 	app := cli.NewApp()
-	app.Name = "gas-station"
+	app.Name = "tx-forwarder"
 	app.Version = "0.0.1-alpha"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{Name: "config"},

@@ -13,9 +13,13 @@ type Config struct {
 		Url string
 	}
 	KeyStore struct {
-		Path     string
-		Address  string
-		Password string
+		Path        string
+		Address     string
+		Password    string
+		KeyJsonPath string
+	}
+	Contracts struct {
+		SampleContract string
 	}
 }
 

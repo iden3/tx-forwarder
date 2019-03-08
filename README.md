@@ -1,13 +1,39 @@
 # Gas Station
-Gas station for ethereum blockchain.
-
-Server that pays for client signed transactions.
+Server that pays gas for client signed transactions for specified smart contracts in ethereum blockchain.
 
 
 
+## Usage
 
+### Config
+Deploy contract:
+```
+./gas-station deploy
+```
+This will print the deployed contract address, then copy&paste in the config file `config.yaml`:
+```
+server:
+        serviceapi: 0.0.0.0:11000
+web3:
+        url: http://127.0.0.1:8545
+keystore:
+        path: /var/config/keystore
+        address: 0x123456789...
+        passwd: /var/config/keystore.password
+        keyjsonpath: /var/config/keystore/UTC-etc
+contracts:
+        samplecontract: 0xasdf
+```
+
+### Run
+Then, run the server:
+```
+./gas-station start
+```
 
 ### Contract
+Current contract is just a working sample contract.
+
 The contract handlers goes inside `eth/contract/` directory.
 
 Once having the contract file written in Solidity, in order to generate the Go handlers:

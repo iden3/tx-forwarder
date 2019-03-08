@@ -14,10 +14,10 @@ import (
 )
 
 // SampleContractABI is the input ABI used to generate the binding from.
-const SampleContractABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"allowed\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_addr\",\"type\":\"address\"}],\"name\":\"addAllowed\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const SampleContractABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"allowed\",\"outputs\":[{\"name\":\"Addr\",\"type\":\"address\"},{\"name\":\"Data\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_addr\",\"type\":\"address\"},{\"name\":\"_data\",\"type\":\"bytes32\"}],\"name\":\"addAllowed\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // SampleContractBin is the compiled bytecode used for deploying new contracts.
-const SampleContractBin = `608060405234801561001057600080fd5b506101c0806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063214296e81461003b578063cb8523c6146100a9575b600080fd5b6100676004803603602081101561005157600080fd5b81019080803590602001909291905050506100ed565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6100eb600480360360208110156100bf57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061012b565b005b6000818154811015156100fc57fe5b906000526020600020016000915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60008190806001815401808255809150509060018203906000526020600020016000909192909190916101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550505056fea165627a7a72305820e4716a4585195c39f8bddb8305568e5084677113fc70e6665a92ac16a5ad8b050029`
+const SampleContractBin = `608060405234801561001057600080fd5b5061022d806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063214296e81461003b5780635fc37d89146100b0575b600080fd5b6100676004803603602081101561005157600080fd5b81019080803590602001909291905050506100fe565b604051808373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018281526020019250505060405180910390f35b6100fc600480360360408110156100c657600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050610151565b005b60008181548110151561010d57fe5b90600052602060002090600202016000915090508060000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16908060010154905082565b600060405180604001604052808473ffffffffffffffffffffffffffffffffffffffff168152602001838152509080600181540180825580915050906001820390600052602060002090600202016000909192909190915060008201518160000160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060208201518160010155505050505056fea165627a7a72305820ea4a2045ca891a597619edc5a07fa593dfa8777b1b7f8166320339619dfbc52b0029`
 
 // DeploySampleContract deploys a new Ethereum contract, binding an instance of SampleContract to it.
 func DeploySampleContract(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *SampleContract, error) {
@@ -176,47 +176,57 @@ func (_SampleContract *SampleContractTransactorRaw) Transact(opts *bind.Transact
 
 // Allowed is a free data retrieval call binding the contract method 0x214296e8.
 //
-// Solidity: function allowed( uint256) constant returns(address)
-func (_SampleContract *SampleContractCaller) Allowed(opts *bind.CallOpts, arg0 *big.Int) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
+// Solidity: function allowed( uint256) constant returns(Addr address, Data bytes32)
+func (_SampleContract *SampleContractCaller) Allowed(opts *bind.CallOpts, arg0 *big.Int) (struct {
+	Addr common.Address
+	Data [32]byte
+}, error) {
+	ret := new(struct {
+		Addr common.Address
+		Data [32]byte
+	})
+	out := ret
 	err := _SampleContract.contract.Call(opts, out, "allowed", arg0)
-	return *ret0, err
+	return *ret, err
 }
 
 // Allowed is a free data retrieval call binding the contract method 0x214296e8.
 //
-// Solidity: function allowed( uint256) constant returns(address)
-func (_SampleContract *SampleContractSession) Allowed(arg0 *big.Int) (common.Address, error) {
+// Solidity: function allowed( uint256) constant returns(Addr address, Data bytes32)
+func (_SampleContract *SampleContractSession) Allowed(arg0 *big.Int) (struct {
+	Addr common.Address
+	Data [32]byte
+}, error) {
 	return _SampleContract.Contract.Allowed(&_SampleContract.CallOpts, arg0)
 }
 
 // Allowed is a free data retrieval call binding the contract method 0x214296e8.
 //
-// Solidity: function allowed( uint256) constant returns(address)
-func (_SampleContract *SampleContractCallerSession) Allowed(arg0 *big.Int) (common.Address, error) {
+// Solidity: function allowed( uint256) constant returns(Addr address, Data bytes32)
+func (_SampleContract *SampleContractCallerSession) Allowed(arg0 *big.Int) (struct {
+	Addr common.Address
+	Data [32]byte
+}, error) {
 	return _SampleContract.Contract.Allowed(&_SampleContract.CallOpts, arg0)
 }
 
-// AddAllowed is a paid mutator transaction binding the contract method 0xcb8523c6.
+// AddAllowed is a paid mutator transaction binding the contract method 0x5fc37d89.
 //
-// Solidity: function addAllowed(_addr address) returns()
-func (_SampleContract *SampleContractTransactor) AddAllowed(opts *bind.TransactOpts, _addr common.Address) (*types.Transaction, error) {
-	return _SampleContract.contract.Transact(opts, "addAllowed", _addr)
+// Solidity: function addAllowed(_addr address, _data bytes32) returns()
+func (_SampleContract *SampleContractTransactor) AddAllowed(opts *bind.TransactOpts, _addr common.Address, _data [32]byte) (*types.Transaction, error) {
+	return _SampleContract.contract.Transact(opts, "addAllowed", _addr, _data)
 }
 
-// AddAllowed is a paid mutator transaction binding the contract method 0xcb8523c6.
+// AddAllowed is a paid mutator transaction binding the contract method 0x5fc37d89.
 //
-// Solidity: function addAllowed(_addr address) returns()
-func (_SampleContract *SampleContractSession) AddAllowed(_addr common.Address) (*types.Transaction, error) {
-	return _SampleContract.Contract.AddAllowed(&_SampleContract.TransactOpts, _addr)
+// Solidity: function addAllowed(_addr address, _data bytes32) returns()
+func (_SampleContract *SampleContractSession) AddAllowed(_addr common.Address, _data [32]byte) (*types.Transaction, error) {
+	return _SampleContract.Contract.AddAllowed(&_SampleContract.TransactOpts, _addr, _data)
 }
 
-// AddAllowed is a paid mutator transaction binding the contract method 0xcb8523c6.
+// AddAllowed is a paid mutator transaction binding the contract method 0x5fc37d89.
 //
-// Solidity: function addAllowed(_addr address) returns()
-func (_SampleContract *SampleContractTransactorSession) AddAllowed(_addr common.Address) (*types.Transaction, error) {
-	return _SampleContract.Contract.AddAllowed(&_SampleContract.TransactOpts, _addr)
+// Solidity: function addAllowed(_addr address, _data bytes32) returns()
+func (_SampleContract *SampleContractTransactorSession) AddAllowed(_addr common.Address, _data [32]byte) (*types.Transaction, error) {
+	return _SampleContract.Contract.AddAllowed(&_SampleContract.TransactOpts, _addr, _data)
 }

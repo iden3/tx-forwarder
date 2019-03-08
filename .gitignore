@@ -1,4 +1,5 @@
 config.yaml
 *.abi
 *.bin
+private-configs
 

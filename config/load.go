@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/iden3/gas-station/eth"
+	"github.com/iden3/tx-forwarder/eth"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -66,7 +66,7 @@ func LoadWeb3(ks *keystore.KeyStore, acc *accounts.Account) *eth.EthService {
 	if hidden {
 		url = url[len("hidden:"):]
 	}
-	ethsrv := eth.NewEthService(url, ks, acc, C.KeyStore.Path, C.KeyStore.Password)
+	ethsrv := eth.NewEthService(url, ks, acc, C.KeyStore.KeyJsonPath, C.KeyStore.Password)
 	if hidden {
 		log.WithField("url", "(hidden)").Info("Connection to web3 server opened")
 	} else {

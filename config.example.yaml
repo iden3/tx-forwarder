@@ -4,5 +4,8 @@ web3:
         url: http://127.0.0.1:8545
 keystore:
         path: /var/config/keystore
-        address: 0x7277273f3fa62dfa238828934
+        address: 0x123456789...
         passwd: /var/config/keystore.password
+        keyjsonpath: /var/config/keystore/UTC-etc
+contracts:
+        samplecontract: 0xasdf

@@ -2,7 +2,6 @@ package eth
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"math"
 	"math/big"
@@ -14,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	samplecontract "github.com/iden3/gas-station/eth/contract"
+	contracts "github.com/iden3/tx-forwarder/eth/contracts"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,12 +21,16 @@ type EthService struct {
 	ks              *keystore.KeyStore
 	acc             *accounts.Account
 	client          *ethclient.Client
-	SampleContract  *samplecontract.SampleContract
+	SampleContract  *contracts.SampleContract
 	contractAddress common.Address
 	KeyStore        struct {
 		Path     string
 		Password string
 	}
+}
+
+func (ethSrv *EthService) Client() *ethclient.Client {
+	return ethSrv.client
 }
 
 func (ethSrv *EthService) Account() *accounts.Account {
@@ -75,24 +78,25 @@ func (ethSrv *EthService) DeployContract() error {
 		return err
 	}
 
-	address, tx, _, err := samplecontract.DeploySampleContract(auth, ethSrv.client)
+	address, tx, _, err := contracts.DeploySampleContract(auth, ethSrv.client)
 	if err != nil {
 		return err
 	}
 	ethSrv.contractAddress = address
 
 	log.Info("sample contract deployed at address: " + address.Hex())
-	fmt.Println("deployment transaction: " + tx.Hash().Hex())
+	log.Info("deployment transaction: " + tx.Hash().Hex())
 	return nil
 }
 
 func (ethSrv *EthService) LoadContract(contractAddr common.Address) {
-	instance, err := samplecontract.NewSampleContract(contractAddr, ethSrv.client)
+	instance, err := contracts.NewSampleContract(contractAddr, ethSrv.client)
 	if err != nil {
 		log.Error(err.Error())
 	}
 	ethSrv.contractAddress = contractAddr
 	ethSrv.SampleContract = instance
+	log.Info("Contract with address " + contractAddr.String() + " loaded")
 }
 
 func (ethSrv *EthService) GetAuth() (*bind.TransactOpts, error) {
@@ -105,6 +109,10 @@ func (ethSrv *EthService) GetAuth() (*bind.TransactOpts, error) {
 	if err != nil {
 		return nil, err
 	}
-	auth, err := bind.NewTransactor(strings.NewReader(string(b)), ethSrv.KeyStore.Password)
+	passw, err := ioutil.ReadFile(ethSrv.KeyStore.Password)
+	if err != nil {
+		return nil, err
+	}
+	auth, err := bind.NewTransactor(strings.NewReader(string(b)), string(passw))
 	return auth, err
 }

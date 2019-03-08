@@ -7,8 +7,8 @@ import (
 	"os/signal"
 
 	"github.com/gin-contrib/cors"
-	"github.com/iden3/gas-station/config"
-	"github.com/iden3/gas-station/eth"
+	"github.com/iden3/tx-forwarder/config"
+	"github.com/iden3/tx-forwarder/eth"
 
 	"github.com/gin-gonic/gin"
 
