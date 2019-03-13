@@ -13,6 +13,7 @@ This will print the deployed contract address, then copy&paste in the config fil
 ```
 server:
         serviceapi: 0.0.0.0:11000
+        adminapi: 0.0.0.0:11001
 web3:
         url: http://127.0.0.1:8545
 keystore:

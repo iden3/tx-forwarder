@@ -8,6 +8,7 @@ import (
 type Config struct {
 	Server struct {
 		ServiceApi string
+		AdminApi   string
 	}
 	Web3 struct {
 		Url string

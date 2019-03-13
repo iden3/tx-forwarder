@@ -3,6 +3,7 @@ package eth
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"io/ioutil"
 	"math"
 	"math/big"
@@ -37,6 +38,10 @@ func (ethSrv *EthService) Client() *ethclient.Client {
 
 func (ethSrv *EthService) Account() *accounts.Account {
 	return ethSrv.acc
+}
+
+func (ethSrv *EthService) ContractAddress() common.Address {
+	return ethSrv.contractAddress
 }
 
 func NewEthService(url string, ks *keystore.KeyStore, acc *accounts.Account, keystorePath, password string) *EthService {
@@ -144,10 +149,12 @@ func (ethSrv *EthService) ForwardTx(tx TxMsg) (*types.Transaction, error) {
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
 
+	fmt.Println(tx.Data)
 	data, err := hex.DecodeString(tx.Data[:2])
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(data)
 	var data32 [32]byte
 	copy(data32[:], data)
 

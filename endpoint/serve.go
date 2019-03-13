@@ -40,6 +40,29 @@ func serveServiceApi() *http.Server {
 	return serviceapisrv
 }
 
+func serveAdminApi(stopch chan interface{}) *http.Server {
+	api := gin.Default()
+	api.Use(cors.Default())
+	adminapi := api.Group("/api/unstable")
+
+	adminapi.POST("/stop", func(c *gin.Context) {
+		// yeah, use curl -X POST http://<adminserver>/stop
+		c.String(http.StatusOK, "got it, shutdowning server")
+		stopch <- nil
+	})
+
+	adminapi.GET("/info", handleInfo)
+
+	adminapisrv := &http.Server{Addr: config.C.Server.AdminApi, Handler: api}
+	go func() {
+		log.Info("API server at ", config.C.Server.AdminApi)
+		if err := adminapisrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Errorf("listen: %s\n", err)
+		}
+	}()
+	return adminapisrv
+}
+
 func Serve(ethservice *eth.EthService) {
 	ethsrv = ethservice
 
@@ -58,6 +81,7 @@ func Serve(ethservice *eth.EthService) {
 
 	// start servers
 	serviceapisrv := serveServiceApi()
+	adminapisrv := serveAdminApi(stopch)
 
 	// wait until shutdown signal
 	<-stopch
@@ -67,5 +91,10 @@ func Serve(ethservice *eth.EthService) {
 		log.Error("ServiceApi Shutdown:", err)
 	} else {
 		log.Info("ServiceApi stopped")
+	}
+	if err := adminapisrv.Shutdown(context.Background()); err != nil {
+		log.Error("AdminApi Shutdown:", err)
+	} else {
+		log.Info("AdminApi stopped")
 	}
 }

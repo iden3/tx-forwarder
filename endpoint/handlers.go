@@ -1,13 +1,13 @@
 package endpoint
 
 import (
-	"github.com/fatih/color"
 	"github.com/gin-gonic/gin"
 	"github.com/iden3/tx-forwarder/eth"
+	log "github.com/sirupsen/logrus"
 )
 
 func fail(c *gin.Context, err error) {
-	color.Red("error: " + err.Error())
+	log.Error("error: " + err.Error())
 	c.JSON(400, gin.H{
 		"error": err.Error(),
 	})
