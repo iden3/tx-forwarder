@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/iden3/go-iden3/cmd/genericserver"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -32,9 +33,9 @@ func serveServiceApi() *http.Server {
 
 	serviceapisrv := &http.Server{Addr: config.C.Server.ServiceApi, Handler: api}
 	go func() {
-		log.Info("API server at ", config.C.Server.ServiceApi)
-		if err := serviceapisrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Errorf("listen: %s\n", err)
+		if err := genericserver.ListenAndServe(serviceapisrv, "Service"); err != nil &&
+			err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
 		}
 	}()
 	return serviceapisrv
@@ -55,9 +56,9 @@ func serveAdminApi(stopch chan interface{}) *http.Server {
 
 	adminapisrv := &http.Server{Addr: config.C.Server.AdminApi, Handler: api}
 	go func() {
-		log.Info("API server at ", config.C.Server.AdminApi)
-		if err := adminapisrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Errorf("listen: %s\n", err)
+		if err := genericserver.ListenAndServe(adminapisrv, "Admin"); err != nil &&
+			err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
 		}
 	}()
 	return adminapisrv
