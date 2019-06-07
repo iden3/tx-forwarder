@@ -17,13 +17,25 @@ func handleGetInfo(c *gin.Context) {
 	c.JSON(200, gin.H{})
 }
 
-func handlePostTx(c *gin.Context) {
-	var tx eth.TxMsg
-	c.BindJSON(&tx)
+func handlePostTxSampleContract(c *gin.Context) {
+	var d eth.SampleCallData
+	c.BindJSON(&d)
 
-	// server side verification here
+	ethTx, err := ethsrv.ForwardTxToSampleContract(d)
+	if err != nil {
+		fail(c, err)
+		return
+	}
+	c.JSON(200, gin.H{
+		"ethTx": ethTx.Hash().Hex(),
+	})
+}
 
-	ethTx, err := ethsrv.ForwardTx(tx)
+func handlePostTxZKPVerifier(c *gin.Context) {
+	var d eth.ZKPVerifierCallData
+	c.BindJSON(&d)
+
+	ethTx, err := ethsrv.ForwardTxToZKPVerifierContract(d)
 	if err != nil {
 		fail(c, err)
 		return

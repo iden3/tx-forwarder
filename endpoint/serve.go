@@ -29,7 +29,8 @@ func serveServiceApi() *http.Server {
 
 	serviceapi := api.Group("/api/unstable")
 	serviceapi.GET("/", handleGetInfo)
-	serviceapi.POST("/tx", handlePostTx)
+	serviceapi.POST("/tx/sample", handlePostTxSampleContract)
+	serviceapi.POST("/tx/zkpverifier", handlePostTxZKPVerifier)
 
 	serviceapisrv := &http.Server{Addr: config.C.Server.ServiceApi, Handler: api}
 	go func() {

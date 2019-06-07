@@ -16,17 +16,20 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	contracts "github.com/iden3/tx-forwarder/eth/contracts"
+	samplecontract "github.com/iden3/tx-forwarder/eth/contracts/samplecontract"
+	zkpverifier "github.com/iden3/tx-forwarder/eth/contracts/zkpverifier"
 	log "github.com/sirupsen/logrus"
 )
 
 type EthService struct {
-	ks              *keystore.KeyStore
-	acc             *accounts.Account
-	client          *ethclient.Client
-	SampleContract  *contracts.SampleContract
-	contractAddress common.Address
-	KeyStore        struct {
+	ks                         *keystore.KeyStore
+	acc                        *accounts.Account
+	client                     *ethclient.Client
+	SampleContract             *samplecontract.SampleContract
+	ZKPVerifierContract        *zkpverifier.CheckFullCircuit
+	sampleContractAddress      common.Address
+	zkpverifierContractAddress common.Address
+	KeyStore                   struct {
 		Path     string
 		Password string
 	}
@@ -40,8 +43,11 @@ func (ethSrv *EthService) Account() *accounts.Account {
 	return ethSrv.acc
 }
 
-func (ethSrv *EthService) ContractAddress() common.Address {
-	return ethSrv.contractAddress
+func (ethSrv *EthService) ZKPVerifierContractAddress() common.Address {
+	return ethSrv.zkpverifierContractAddress
+}
+func (ethSrv *EthService) SampleContractAddress() common.Address {
+	return ethSrv.sampleContractAddress
 }
 
 func NewEthService(url string, ks *keystore.KeyStore, acc *accounts.Account, keystorePath, password string) *EthService {
@@ -79,31 +85,59 @@ func (ethSrv *EthService) GetBalance(address common.Address) (*big.Float, error)
 	return ethBalance, nil
 }
 
-func (ethSrv *EthService) DeployContract() error {
+func (ethSrv *EthService) DeploySampleContract() error {
 	auth, err := ethSrv.GetAuth()
 	if err != nil {
 		return err
 	}
 
-	address, tx, _, err := contracts.DeploySampleContract(auth, ethSrv.client)
+	address, tx, _, err := samplecontract.DeploySampleContract(auth, ethSrv.client)
 	if err != nil {
 		return err
 	}
-	ethSrv.contractAddress = address
+	ethSrv.sampleContractAddress = address
 
 	log.Info("sample contract deployed at address: " + address.Hex())
+	log.Info("deployment transaction: " + tx.Hash().Hex())
+
+	return nil
+}
+
+func (ethSrv *EthService) DeployZKPVerifierContract() error {
+	auth, err := ethSrv.GetAuth()
+	if err != nil {
+		return err
+	}
+
+	address, tx, _, err := zkpverifier.DeployVerifier(auth, ethSrv.client)
+	if err != nil {
+		return err
+	}
+	ethSrv.zkpverifierContractAddress = address
+
+	log.Info("zkpverifier contract deployed at address: " + address.Hex())
 	log.Info("deployment transaction: " + tx.Hash().Hex())
 	return nil
 }
 
-func (ethSrv *EthService) LoadContract(contractAddr common.Address) {
-	instance, err := contracts.NewSampleContract(contractAddr, ethSrv.client)
+func (ethSrv *EthService) LoadSampleContract(contractAddr common.Address) {
+	instance, err := samplecontract.NewSampleContract(contractAddr, ethSrv.client)
 	if err != nil {
 		log.Error(err.Error())
 	}
-	ethSrv.contractAddress = contractAddr
+	ethSrv.sampleContractAddress = contractAddr
 	ethSrv.SampleContract = instance
-	log.Info("Contract with address " + contractAddr.String() + " loaded")
+	log.Info("Sample contract with address " + contractAddr.String() + " loaded")
+}
+
+func (ethSrv *EthService) LoadZKPVerifierContract(contractAddr common.Address) {
+	instance, err := zkpverifier.NewCheckFullCircuit(contractAddr, ethSrv.client)
+	if err != nil {
+		log.Error(err.Error())
+	}
+	ethSrv.zkpverifierContractAddress = contractAddr
+	ethSrv.ZKPVerifierContract = instance
+	log.Info("ZKPVerifier contract with address " + contractAddr.String() + " loaded")
 }
 
 func (ethSrv *EthService) GetAuth() (*bind.TransactOpts, error) {
@@ -124,12 +158,18 @@ func (ethSrv *EthService) GetAuth() (*bind.TransactOpts, error) {
 	return auth, err
 }
 
-type TxMsg struct {
+type SampleCallData struct {
 	Addr string `json:"addr"`
 	Data string `json:"dataHex"`
 }
+type ZKPVerifierCallData struct {
+	a      [2]string
+	b      [2][2]string
+	c      [2]string
+	inputs [11]string
+}
 
-func (ethSrv *EthService) ForwardTx(tx TxMsg) (*types.Transaction, error) {
+func (ethSrv *EthService) ForwardTxToSampleContract(d SampleCallData) (*types.Transaction, error) {
 	nonce, err := ethSrv.Client().PendingNonceAt(context.Background(), ethSrv.acc.Address)
 	if err != nil {
 		return nil, err
@@ -149,8 +189,8 @@ func (ethSrv *EthService) ForwardTx(tx TxMsg) (*types.Transaction, error) {
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
 
-	fmt.Println(tx.Data)
-	data, err := hex.DecodeString(tx.Data[:2])
+	fmt.Println(d.Data)
+	data, err := hex.DecodeString(d.Data[:2])
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +198,40 @@ func (ethSrv *EthService) ForwardTx(tx TxMsg) (*types.Transaction, error) {
 	var data32 [32]byte
 	copy(data32[:], data)
 
-	ethTx, err := ethSrv.SampleContract.AddAllowed(auth, common.HexToAddress(tx.Addr), data32)
+	ethTx, err := ethSrv.SampleContract.AddAllowed(auth, common.HexToAddress(d.Addr), data32)
+	if err != nil {
+		return nil, err
+	}
+	return ethTx, nil
+}
+
+func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) (*types.Transaction, error) {
+	nonce, err := ethSrv.Client().PendingNonceAt(context.Background(), ethSrv.acc.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	gasPrice, err := ethSrv.Client().SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := ethSrv.GetAuth()
+	if err != nil {
+		return nil, err
+	}
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)     // in wei
+	auth.GasLimit = uint64(300000) // in units
+	auth.GasPrice = gasPrice
+
+	// zkp verifierinputs
+	var a [2]*big.Int
+	var b [2][2]*big.Int
+	var c [2]*big.Int
+	var inputs [11]*big.Int
+
+	ethTx, err := ethSrv.ZKPVerifierContract.Verify(auth, a, b, c, inputs)
 	if err != nil {
 		return nil, err
 	}

@@ -9,8 +9,9 @@ func handleInfo(c *gin.Context) {
 		return
 	}
 	c.JSON(200, gin.H{
-		"ethBalance":      balance.String(),
-		"serverAddress":   ethsrv.Account().Address,
-		"contractAddress": ethsrv.ContractAddress().String(),
+		"ethBalance":                 balance.String(),
+		"serverAddress":              ethsrv.Account().Address,
+		"sampleContractAddress":      ethsrv.SampleContractAddress().String(),
+		"zkpverifierContractAddress": ethsrv.ZKPVerifierContractAddress().String(),
 	})
 }

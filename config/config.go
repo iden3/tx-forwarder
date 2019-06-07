@@ -20,7 +20,8 @@ type Config struct {
 		KeyJsonPath string
 	}
 	Contracts struct {
-		SampleContract string
+		SampleContract      string
+		ZKPVerifierContract string
 	}
 }
 
