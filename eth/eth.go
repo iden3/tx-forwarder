@@ -3,11 +3,13 @@ package eth
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math"
 	"math/big"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -162,12 +164,6 @@ type SampleCallData struct {
 	Addr string `json:"addr"`
 	Data string `json:"dataHex"`
 }
-type ZKPVerifierCallData struct {
-	a      [2]string
-	b      [2][2]string
-	c      [2]string
-	inputs [11]string
-}
 
 func (ethSrv *EthService) ForwardTxToSampleContract(d SampleCallData) (*types.Transaction, error) {
 	nonce, err := ethSrv.Client().PendingNonceAt(context.Background(), ethSrv.acc.Address)
@@ -205,6 +201,13 @@ func (ethSrv *EthService) ForwardTxToSampleContract(d SampleCallData) (*types.Tr
 	return ethTx, nil
 }
 
+type ZKPVerifierCallData struct {
+	A      [2]string    `json:"a"`
+	B      [2][2]string `json:"b"`
+	C      [2]string    `json:"c"`
+	Inputs [11]string   `json:"inputs"`
+}
+
 func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) (*types.Transaction, error) {
 	nonce, err := ethSrv.Client().PendingNonceAt(context.Background(), ethSrv.acc.Address)
 	if err != nil {
@@ -230,6 +233,64 @@ func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) 
 	var b [2][2]*big.Int
 	var c [2]*big.Int
 	var inputs [11]*big.Int
+
+	// a
+	a0, ok := new(big.Int).SetString(d.A[0], 0)
+	if !ok {
+		fmt.Println(d.A[0])
+		return nil, errors.New("error parsing hex to bigint a[0]")
+	}
+	a1, ok := new(big.Int).SetString(d.A[1], 0)
+	if !ok {
+		return nil, errors.New("error parsing hex to bigint a[1]")
+	}
+	a = [2]*big.Int{a0, a1}
+
+	// b
+	b00, ok := new(big.Int).SetString(d.B[0][0], 0)
+	if !ok {
+		return nil, errors.New("error parsing hex to bigint b[0][0]")
+	}
+	b01, ok := new(big.Int).SetString(d.B[0][1], 0)
+	if !ok {
+		return nil, errors.New("error parsing hex to bigint b[0][1]")
+	}
+	b10, ok := new(big.Int).SetString(d.B[1][0], 0)
+	if !ok {
+		return nil, errors.New("error parsing hex to bigint b[1][0]")
+	}
+	b11, ok := new(big.Int).SetString(d.B[1][1], 0)
+	if !ok {
+		return nil, errors.New("error parsing hex to bigint b[1][1]")
+	}
+	b0 := [2]*big.Int{b00, b01}
+	b1 := [2]*big.Int{b10, b11}
+	b = [2][2]*big.Int{b0, b1}
+
+	// c
+	c0, ok := new(big.Int).SetString(d.C[0], 0)
+	if !ok {
+		return nil, errors.New("error parsing hex to bigint c[0]")
+	}
+	c1, ok := new(big.Int).SetString(d.C[1], 0)
+	if !ok {
+		return nil, errors.New("error parsing hex to bigint c[1]")
+	}
+	c = [2]*big.Int{c0, c1}
+
+	// inputs
+	for i, inpStr := range d.Inputs {
+		inp, ok := new(big.Int).SetString(inpStr, 0)
+		if !ok {
+			return nil, errors.New("error parsing hex to bigint inputs[" + strconv.Itoa(i) + "]")
+		}
+		inputs[i] = inp
+	}
+
+	fmt.Println(a)
+	fmt.Println(b)
+	fmt.Println(c)
+	fmt.Println(inputs)
 
 	ethTx, err := ethSrv.ZKPVerifierContract.Verify(auth, a, b, c, inputs)
 	if err != nil {

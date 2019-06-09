@@ -5,10 +5,16 @@ Server that forwards the tx to the specified smart contract.
 ## Usage
 
 ### Config
-Deploy contract:
+Deploy `sample` smart contract:
 ```
-./tx-forwarder deploy
+./tx-forwarder deploysample
 ```
+
+Deploy `ZKPVerifier` smart contract:
+```
+./tx-forwarder deployzkpverifier
+```
+
 This will print the deployed contract address, then copy&paste in the config file `config.yaml`:
 ```
 server:
@@ -23,6 +29,7 @@ keystore:
         keyjsonpath: /var/config/keystore/UTC-etc
 contracts:
         samplecontract: 0xasdf
+        zkpverifiercontract: 0xqwerty
 ```
 
 ### Run
@@ -30,6 +37,12 @@ Then, run the server:
 ```
 ./tx-forwarder start
 ```
+
+Also can info can be getted by running:
+```
+./tx-forwarder info
+```
+
 
 ### Contract
 Current contract is just a working sample contract.

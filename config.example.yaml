@@ -10,3 +10,4 @@ keystore:
         keyjsonpath: /var/config/keystore/UTC-etc
 contracts:
         samplecontract: 0xasdf
+        zkpverifiercontract: 0xqwerty
