@@ -7,9 +7,8 @@ require (
 	github.com/ethereum/go-ethereum v1.8.23
 	github.com/gin-contrib/cors v0.0.0-20190301062745-f9e10995c85a
 	github.com/gin-gonic/gin v1.3.0
-	github.com/iden3/go-iden3 v0.0.3-0.20190325144113-c072f0edf3fd
+	github.com/iden3/go-iden3 v0.0.5
 	github.com/sirupsen/logrus v1.4.0
 	github.com/spf13/viper v1.3.2
 	github.com/urfave/cli v1.20.0
-	golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576 // indirect
 )

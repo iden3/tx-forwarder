@@ -53,5 +53,8 @@ Once having the contract file written in Solidity, in order to generate the Go h
 ```
 solc --abi --bin SampleContract.sol -o build
 abigen --bin=./build/SampleContract.bin --abi=./build/SampleContract.abi --pkg=SampleContract --out=SampleContract.go
+
+// or directly (use this one)
+abigen --sol SampleContract.sol --pkg SampleContract --out=SampleContract.go
 ```
 And place the `sampleContract.go` file in the `eth/contract/sampleContract.go` path.

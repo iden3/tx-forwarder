@@ -18,20 +18,30 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/iden3/go-iden3/core"
+	disableid "github.com/iden3/tx-forwarder/eth/contracts/disableid"
+	iden3helperscontract "github.com/iden3/tx-forwarder/eth/contracts/iden3helpers"
+	mimc7contract "github.com/iden3/tx-forwarder/eth/contracts/mimc7"
 	samplecontract "github.com/iden3/tx-forwarder/eth/contracts/samplecontract"
 	zkpverifier "github.com/iden3/tx-forwarder/eth/contracts/zkpverifier"
 	log "github.com/sirupsen/logrus"
 )
 
 type EthService struct {
-	ks                         *keystore.KeyStore
-	acc                        *accounts.Account
-	client                     *ethclient.Client
-	SampleContract             *samplecontract.SampleContract
-	ZKPVerifierContract        *zkpverifier.CheckFullCircuit
-	sampleContractAddress      common.Address
-	zkpverifierContractAddress common.Address
-	KeyStore                   struct {
+	ks                          *keystore.KeyStore
+	acc                         *accounts.Account
+	client                      *ethclient.Client
+	SampleContract              *samplecontract.SampleContract
+	ZKPVerifierContract         *zkpverifier.CheckFullCircuit
+	Mimc7Contract               *disableid.DisableId
+	Iden3HelpersContract        *disableid.DisableId
+	DisableIdContract           *disableid.DisableId
+	sampleContractAddress       common.Address
+	zkpverifierContractAddress  common.Address
+	mimc7ContractAddress        common.Address
+	iden3helpersContractAddress common.Address
+	disableidContractAddress    common.Address
+	KeyStore                    struct {
 		Path     string
 		Password string
 	}
@@ -45,11 +55,20 @@ func (ethSrv *EthService) Account() *accounts.Account {
 	return ethSrv.acc
 }
 
+func (ethSrv *EthService) SampleContractAddress() common.Address {
+	return ethSrv.sampleContractAddress
+}
 func (ethSrv *EthService) ZKPVerifierContractAddress() common.Address {
 	return ethSrv.zkpverifierContractAddress
 }
-func (ethSrv *EthService) SampleContractAddress() common.Address {
-	return ethSrv.sampleContractAddress
+func (ethSrv *EthService) Mimc7ContractAddress() common.Address {
+	return ethSrv.mimc7ContractAddress
+}
+func (ethSrv *EthService) Iden3HelpersContractAddress() common.Address {
+	return ethSrv.iden3helpersContractAddress
+}
+func (ethSrv *EthService) DisableIdContractAddress() common.Address {
+	return ethSrv.disableidContractAddress
 }
 
 func NewEthService(url string, ks *keystore.KeyStore, acc *accounts.Account, keystorePath, password string) *EthService {
@@ -122,6 +141,57 @@ func (ethSrv *EthService) DeployZKPVerifierContract() error {
 	return nil
 }
 
+func (ethSrv *EthService) DeployMimc7Contract() error {
+	auth, err := ethSrv.GetAuth()
+	if err != nil {
+		return err
+	}
+
+	address, tx, _, err := mimc7contract.DeployMimc7(auth, ethSrv.client)
+	if err != nil {
+		return err
+	}
+	ethSrv.mimc7ContractAddress = address
+
+	log.Info("Mimc7 contract deployed at address: " + address.Hex())
+	log.Info("deployment transaction: " + tx.Hash().Hex())
+	return nil
+}
+
+func (ethSrv *EthService) DeployIden3HelpersContract(mimc7Address common.Address) error {
+	auth, err := ethSrv.GetAuth()
+	if err != nil {
+		return err
+	}
+
+	address, tx, _, err := iden3helperscontract.DeployIden3Helpers(auth, ethSrv.client, mimc7Address)
+	if err != nil {
+		return err
+	}
+	ethSrv.iden3helpersContractAddress = address
+
+	log.Info("Iden3Helpers contract deployed at address: " + address.Hex())
+	log.Info("deployment transaction: " + tx.Hash().Hex())
+	return nil
+}
+
+func (ethSrv *EthService) DeployDisableIdContract(iden3HelpersAddress common.Address) error {
+	auth, err := ethSrv.GetAuth()
+	if err != nil {
+		return err
+	}
+
+	address, tx, _, err := disableid.DeployDisableId(auth, ethSrv.client, iden3HelpersAddress)
+	if err != nil {
+		return err
+	}
+	ethSrv.disableidContractAddress = address
+
+	log.Info("DisableId contract deployed at address: " + address.Hex())
+	log.Info("deployment transaction: " + tx.Hash().Hex())
+	return nil
+}
+
 func (ethSrv *EthService) LoadSampleContract(contractAddr common.Address) {
 	instance, err := samplecontract.NewSampleContract(contractAddr, ethSrv.client)
 	if err != nil {
@@ -140,6 +210,16 @@ func (ethSrv *EthService) LoadZKPVerifierContract(contractAddr common.Address) {
 	ethSrv.zkpverifierContractAddress = contractAddr
 	ethSrv.ZKPVerifierContract = instance
 	log.Info("ZKPVerifier contract with address " + contractAddr.String() + " loaded")
+}
+
+func (ethSrv *EthService) LoadDisableIdContract(contractAddr common.Address) {
+	instance, err := disableid.NewDisableId(contractAddr, ethSrv.client)
+	if err != nil {
+		log.Error(err.Error())
+	}
+	ethSrv.disableidContractAddress = contractAddr
+	ethSrv.DisableIdContract = instance
+	log.Info("DisableId contract with address " + contractAddr.String() + " loaded")
 }
 
 func (ethSrv *EthService) GetAuth() (*bind.TransactOpts, error) {
@@ -293,6 +373,45 @@ func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) 
 	fmt.Println(inputs)
 
 	ethTx, err := ethSrv.ZKPVerifierContract.Verify(auth, a, b, c, inputs)
+	if err != nil {
+		return nil, err
+	}
+	return ethTx, nil
+}
+
+type DisableIdCallData struct {
+	Mtp        []byte
+	Id         core.ID
+	EthAddress common.Address
+	MsgHash    [32]byte
+	Rsv        []byte
+}
+
+func (ethSrv *EthService) ForwardTxToDisableIdContract(d DisableIdCallData) (*types.Transaction, error) {
+	nonce, err := ethSrv.Client().PendingNonceAt(context.Background(), ethSrv.acc.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	gasPrice, err := ethSrv.Client().SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := ethSrv.GetAuth()
+	if err != nil {
+		return nil, err
+	}
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)     // in wei
+	auth.GasLimit = uint64(300000) // in units
+	auth.GasPrice = gasPrice
+
+	// disableid inputs
+	var id [31]byte
+	copy(id[:], d.Id.Bytes())
+
+	ethTx, err := ethSrv.DisableIdContract.DisableIdentity(auth, d.Mtp, id, d.EthAddress, d.MsgHash, d.Rsv)
 	if err != nil {
 		return nil, err
 	}
