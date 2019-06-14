@@ -22,6 +22,7 @@ type Config struct {
 	Contracts struct {
 		SampleContract      string
 		ZKPVerifierContract string
+		DisableIdContract   string
 	}
 }
 

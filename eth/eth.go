@@ -106,90 +106,79 @@ func (ethSrv *EthService) GetBalance(address common.Address) (*big.Float, error)
 	return ethBalance, nil
 }
 
-func (ethSrv *EthService) DeploySampleContract() error {
+func (ethSrv *EthService) DeploySampleContract() (*common.Address, *types.Transaction, error) {
 	auth, err := ethSrv.GetAuth()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	address, tx, _, err := samplecontract.DeploySampleContract(auth, ethSrv.client)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	ethSrv.sampleContractAddress = address
 
-	log.Info("sample contract deployed at address: " + address.Hex())
-	log.Info("deployment transaction: " + tx.Hash().Hex())
-
-	return nil
+	return &address, tx, nil
 }
 
-func (ethSrv *EthService) DeployZKPVerifierContract() error {
+func (ethSrv *EthService) DeployZKPVerifierContract() (*common.Address, *types.Transaction, error) {
 	auth, err := ethSrv.GetAuth()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	address, tx, _, err := zkpverifier.DeployVerifier(auth, ethSrv.client)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	ethSrv.zkpverifierContractAddress = address
 
-	log.Info("zkpverifier contract deployed at address: " + address.Hex())
-	log.Info("deployment transaction: " + tx.Hash().Hex())
-	return nil
+	return &address, tx, nil
 }
 
-func (ethSrv *EthService) DeployMimc7Contract() error {
+func (ethSrv *EthService) DeployMimc7Contract() (*common.Address, *types.Transaction, error) {
 	auth, err := ethSrv.GetAuth()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	address, tx, _, err := mimc7contract.DeployMimc7(auth, ethSrv.client)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	ethSrv.mimc7ContractAddress = address
 
-	log.Info("Mimc7 contract deployed at address: " + address.Hex())
-	log.Info("deployment transaction: " + tx.Hash().Hex())
-	return nil
+	return &address, tx, nil
 }
 
-func (ethSrv *EthService) DeployIden3HelpersContract(mimc7Address common.Address) error {
+func (ethSrv *EthService) DeployIden3HelpersContract(mimc7Address common.Address) (*common.Address, *types.Transaction, error) {
 	auth, err := ethSrv.GetAuth()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	address, tx, _, err := iden3helperscontract.DeployIden3Helpers(auth, ethSrv.client, mimc7Address)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	ethSrv.iden3helpersContractAddress = address
 
-	log.Info("Iden3Helpers contract deployed at address: " + address.Hex())
-	log.Info("deployment transaction: " + tx.Hash().Hex())
-	return nil
+	return &address, tx, nil
 }
 
-func (ethSrv *EthService) DeployDisableIdContract(iden3HelpersAddress common.Address) error {
+func (ethSrv *EthService) DeployDisableIdContract(iden3HelpersAddress common.Address) (*common.Address, *types.Transaction, error) {
 	auth, err := ethSrv.GetAuth()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	address, tx, _, err := disableid.DeployDisableId(auth, ethSrv.client, iden3HelpersAddress)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	ethSrv.disableidContractAddress = address
 
-	log.Info("DisableId contract deployed at address: " + address.Hex())
-	log.Info("deployment transaction: " + tx.Hash().Hex())
-	return nil
+	return &address, tx, nil
 }
 
 func (ethSrv *EthService) LoadSampleContract(contractAddr common.Address) {

@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/iden3/tx-forwarder/config"
 	"github.com/iden3/tx-forwarder/endpoint"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -29,16 +30,28 @@ var ServerCommands = []cli.Command{
 		Action:  cmdInfo,
 	},
 	{
-		Name:    "deploysample",
-		Aliases: []string{},
-		Usage:   "deploy sample contract",
-		Action:  cmdDeploySampleContract,
-	},
-	{
-		Name:    "deployzkpverifier",
-		Aliases: []string{},
-		Usage:   "deploy zkpverifier contract",
-		Action:  cmdDeployZKPVerifierContract,
+		Name:  "deploy",
+		Usage: "deploy smart contracts",
+		Subcommands: []cli.Command{
+			{
+				Name:    "sample",
+				Aliases: []string{},
+				Usage:   "deploy sample contract",
+				Action:  cmdDeploySampleContract,
+			},
+			{
+				Name:    "zkpverifier",
+				Aliases: []string{},
+				Usage:   "deploy zkpverifier contract",
+				Action:  cmdDeployZKPVerifierContract,
+			},
+			{
+				Name:    "disableid",
+				Aliases: []string{},
+				Usage:   "deploy disableid contract",
+				Action:  cmdDeployDisableIdContract,
+			},
+		},
 	},
 }
 
@@ -51,9 +64,12 @@ func cmdStart(c *cli.Context) error {
 	ethSrv := config.LoadWeb3(ks, &acc)
 
 	sampleContractAddr := common.HexToAddress(config.C.Contracts.SampleContract)
-	zkpverifierContractAddr := common.HexToAddress(config.C.Contracts.SampleContract)
+	zkpverifierContractAddr := common.HexToAddress(config.C.Contracts.ZKPVerifierContract)
+	disableidContractAddr := common.HexToAddress(config.C.Contracts.DisableIdContract)
+
 	ethSrv.LoadSampleContract(sampleContractAddr)
 	ethSrv.LoadZKPVerifierContract(zkpverifierContractAddr)
+	ethSrv.LoadDisableIdContract(disableidContractAddr)
 
 	endpoint.Serve(ethSrv)
 
@@ -82,9 +98,14 @@ func cmdDeploySampleContract(c *cli.Context) error {
 	ks, acc := config.LoadKeyStore()
 	ethSrv := config.LoadWeb3(ks, &acc)
 
-	err := ethSrv.DeploySampleContract()
+	contractAddress, tx, err := ethSrv.DeploySampleContract()
+	if err != nil {
+		return err
+	}
+	log.Info("sample contract deployed at address: " + contractAddress.Hex())
+	log.Info("deployment transaction: " + tx.Hash().Hex())
 
-	return err
+	return nil
 }
 func cmdDeployZKPVerifierContract(c *cli.Context) error {
 	if err := config.MustRead(c); err != nil {
@@ -94,7 +115,46 @@ func cmdDeployZKPVerifierContract(c *cli.Context) error {
 	ks, acc := config.LoadKeyStore()
 	ethSrv := config.LoadWeb3(ks, &acc)
 
-	err := ethSrv.DeployZKPVerifierContract()
+	contractAddress, tx, err := ethSrv.DeployZKPVerifierContract()
+	if err != nil {
+		return err
+	}
+	log.Info("zkpverifier contract deployed at address: " + contractAddress.Hex())
+	log.Info("deployment transaction: " + tx.Hash().Hex())
 
-	return err
+	return nil
+}
+
+func cmdDeployDisableIdContract(c *cli.Context) error {
+	if err := config.MustRead(c); err != nil {
+		return err
+	}
+
+	ks, acc := config.LoadKeyStore()
+	ethSrv := config.LoadWeb3(ks, &acc)
+
+	log.Info("deploying smart contracts: Mimc7, Iden3Helpers, DisableId")
+
+	contractAddress, tx, err := ethSrv.DeployMimc7Contract()
+	if err != nil {
+		return err
+	}
+	log.Info("Mimc7 contract deployed at address: " + contractAddress.Hex())
+	log.Info("deployment transaction: " + tx.Hash().Hex())
+
+	contractAddress, tx, err = ethSrv.DeployIden3HelpersContract(*contractAddress)
+	if err != nil {
+		return err
+	}
+	log.Info("Iden3Helpers contract deployed at address: " + contractAddress.Hex())
+	log.Info("deployment transaction: " + tx.Hash().Hex())
+
+	contractAddress, tx, err = ethSrv.DeployDisableIdContract(*contractAddress)
+	if err != nil {
+		return err
+	}
+	log.Info("DisableId contract deployed at address: " + contractAddress.Hex())
+	log.Info("deployment transaction: " + tx.Hash().Hex())
+
+	return nil
 }
