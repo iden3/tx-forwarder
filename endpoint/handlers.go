@@ -19,7 +19,11 @@ func handleGetInfo(c *gin.Context) {
 
 func handlePostTxSampleContract(c *gin.Context) {
 	var d eth.SampleCallData
-	c.BindJSON(&d)
+	err := c.BindJSON(&d)
+	if err != nil {
+		fail(c, err)
+		return
+	}
 
 	ethTx, err := ethsrv.ForwardTxToSampleContract(d)
 	if err != nil {
@@ -33,9 +37,31 @@ func handlePostTxSampleContract(c *gin.Context) {
 
 func handlePostTxZKPVerifier(c *gin.Context) {
 	var d eth.ZKPVerifierCallData
-	c.BindJSON(&d)
+	err := c.BindJSON(&d)
+	if err != nil {
+		fail(c, err)
+		return
+	}
 
 	ethTx, err := ethsrv.ForwardTxToZKPVerifierContract(d)
+	if err != nil {
+		fail(c, err)
+		return
+	}
+	c.JSON(200, gin.H{
+		"ethTx": ethTx.Hash().Hex(),
+	})
+}
+
+func handlePostTxDisableId(c *gin.Context) {
+	var d eth.DisableIdCallData
+	err := c.BindJSON(&d)
+	if err != nil {
+		fail(c, err)
+		return
+	}
+
+	ethTx, err := ethsrv.ForwardTxToDisableIdContract(d)
 	if err != nil {
 		fail(c, err)
 		return

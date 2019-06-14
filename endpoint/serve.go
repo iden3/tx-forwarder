@@ -31,6 +31,7 @@ func serveServiceApi() *http.Server {
 	serviceapi.GET("/", handleGetInfo)
 	serviceapi.POST("/tx/sample", handlePostTxSampleContract)
 	serviceapi.POST("/tx/zkpverifier", handlePostTxZKPVerifier)
+	serviceapi.POST("/tx/disableid", handlePostTxDisableId)
 
 	serviceapisrv := &http.Server{Addr: config.C.Server.ServiceApi, Handler: api}
 	go func() {

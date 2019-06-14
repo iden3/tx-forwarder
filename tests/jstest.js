@@ -1,4 +1,6 @@
 const axios = require('axios');
+const ethUtil = require('ethereumjs-util');
+const bs58 = require('bs58');
 
 const url = 'http://127.0.0.1:11000/api/unstable';
 
@@ -27,5 +29,48 @@ axios.post(url + '/tx/zkpverifier', proof)
   })
   .catch(function (error) {
     // handle error
-    console.log(error);
+    console.log(error.res.data);
+  });
+
+// disableid
+
+const privateKeyHex = '0x0102030405060708091011121314151617181920212223242526272829303132';
+const privateKey = Buffer.from(privateKeyHex.substr(2), 'hex');
+const kopHex = '0x966764905ac3e864c4bad1641659eda209b551b4cd78b08073db328b270a7f11';
+const kdisHex = '0xc40966dd2c5af51ef1f431dc6b937ae1cab07be6';
+const kreenHex = '0xe0fbce58cfaa72812103f003adce3f284fe5fc7c';
+
+// Id genesis generated from above keys
+const id = '112utFr3U7nqgq1g41qcfQhbyrvoTXuifV6umzer2F';
+const idBytes = bs58.decode(id);
+const idString = '0x' + idBytes.toString('hex');
+const root = idBytes.slice(2, 29);
+const rootString = '0x' + root.toString('hex');
+
+// Proof claim generated from claimKethDis 
+const proofHex = '0x0001000000000000000000000000000000000000000000000000000000000001'
+                  +'106211b6e71b0758fb754ee02927806ad700469465785e00715a6aa45330b12b';
+
+// Sign message random with Kdisable
+const msg = Buffer.from('This is a test message');
+const msgHash = ethUtil.hashPersonalMessage(msg);
+const msgHashHex = ethUtil.bufferToHex(msgHash);
+const sig = ethUtil.ecsign(msgHash, privateKey);
+const sigHex = "0x" + Buffer.concat([sig.r,sig.s,ethUtil.toBuffer(sig.v)]).toString('hex');
+
+const disableData = {
+  mtp: proofHex,
+  id: idString,
+  ethaddress: kdisHex,
+  msghash: msgHashHex,
+  rsv: sigHex,
+};
+axios.post(url + '/tx/disableid', disableData)
+  .then(function (res) {
+    // handle success
+    console.log(res.data);
+  })
+  .catch(function (error) {
+    // handle error
+    console.log(error.response.data);
   });

@@ -18,7 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/iden3/go-iden3/core"
+	common3 "github.com/iden3/go-iden3/common"
 	disableid "github.com/iden3/tx-forwarder/eth/contracts/disableid"
 	iden3helperscontract "github.com/iden3/tx-forwarder/eth/contracts/iden3helpers"
 	mimc7contract "github.com/iden3/tx-forwarder/eth/contracts/mimc7"
@@ -369,11 +369,12 @@ func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) 
 }
 
 type DisableIdCallData struct {
-	Mtp        []byte
-	Id         core.ID
-	EthAddress common.Address
-	MsgHash    [32]byte
-	Rsv        []byte
+	// all in hex format, from js
+	Mtp        string
+	Id         string
+	EthAddress string
+	MsgHash    string
+	Rsv        string
 }
 
 func (ethSrv *EthService) ForwardTxToDisableIdContract(d DisableIdCallData) (*types.Transaction, error) {
@@ -398,9 +399,33 @@ func (ethSrv *EthService) ForwardTxToDisableIdContract(d DisableIdCallData) (*ty
 
 	// disableid inputs
 	var id [31]byte
-	copy(id[:], d.Id.Bytes())
+	var mtp []byte
+	var ethAddress common.Address
+	var msgHash [32]byte
+	var rsv []byte
 
-	ethTx, err := ethSrv.DisableIdContract.DisableIdentity(auth, d.Mtp, id, d.EthAddress, d.MsgHash, d.Rsv)
+	idBytes, err := common3.HexDecode(d.Id)
+	if err != nil {
+		return nil, err
+	}
+	copy(id[:], idBytes[:31])
+	mtp, err = common3.HexDecode(d.Mtp)
+	if err != nil {
+		return nil, err
+	}
+	ethAddress = common.HexToAddress(d.EthAddress)
+	msgHashBytes, err := common3.HexDecode(d.MsgHash)
+	if err != nil {
+		return nil, err
+	}
+	copy(msgHash[:], msgHashBytes[:32])
+	rsv, err = common3.HexDecode(d.Rsv)
+	if err != nil {
+		return nil, err
+	}
+
+	// ethTx, err := ethSrv.DisableIdContract.DisableIdentity(auth, d.Mtp, id, d.EthAddress, d.MsgHash, d.Rsv)
+	ethTx, err := ethSrv.DisableIdContract.DisableIdentity(auth, mtp, id, ethAddress, msgHash, rsv)
 	if err != nil {
 		return nil, err
 	}

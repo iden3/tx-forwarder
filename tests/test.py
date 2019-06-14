@@ -40,7 +40,20 @@ zkpdata = {
         }
 print(zkpdata)
 r = requests.post(URL + "/tx/zkpverifier", json=zkpdata)
-t.rStatus("post forward tx", r)
+t.rStatus("zkpverifier post forward tx", r)
+jsonR = r.json()
+print(jsonR)
+
+
+disabledata = {
+        "mtp": "0x0001000000000000000000000000000000000000000000000000000000000001106211b6e71b0758fb754ee02927806ad700469465785e00715a6aa45330b12b",
+  "id": "0x00002a1cd65ad84621144f479139efd0d08c69c6163685688b969b280fc184",
+  "ethaddress": "0xc40966dd2c5af51ef1f431dc6b937ae1cab07be6",
+  "msghash": "0xd1622712b967e14e10ad6be84125b0e271bc9ad999c23d737e45e524e09ecc81",
+  "rsv": "0xfffad6502cb890b168c46fd04c56f5d532c3d872595c330d31e8e8258fb6c38d581efa2491785508a19c2739f591c32ac078238e52a7bd03b227be35833d36111c"
+}
+r = requests.post(URL + "/tx/disableid", json=disabledata)
+t.rStatus("disableid post forward tx", r)
 jsonR = r.json()
 print(jsonR)
 
