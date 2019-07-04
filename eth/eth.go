@@ -274,7 +274,7 @@ type ZKPVerifierCallData struct {
 	A      [2]string    `json:"a"`
 	B      [2][2]string `json:"b"`
 	C      [2]string    `json:"c"`
-	Inputs [11]string   `json:"inputs"`
+	Inputs [10]string   `json:"inputs"`
 }
 
 func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) (*types.Transaction, error) {
@@ -301,7 +301,7 @@ func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) 
 	var a [2]*big.Int
 	var b [2][2]*big.Int
 	var c [2]*big.Int
-	var inputs [11]*big.Int
+	var inputs [10]*big.Int
 
 	// a
 	a0, ok := new(big.Int).SetString(d.A[0], 0)
@@ -351,6 +351,8 @@ func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) 
 	for i, inpStr := range d.Inputs {
 		inp, ok := new(big.Int).SetString(inpStr, 0)
 		if !ok {
+			fmt.Println(inpStr)
+			fmt.Println(inp)
 			return nil, errors.New("error parsing hex to bigint inputs[" + strconv.Itoa(i) + "]")
 		}
 		inputs[i] = inp

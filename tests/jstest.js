@@ -5,22 +5,21 @@ const bs58 = require('bs58');
 const url = 'http://127.0.0.1:11000/api/unstable';
 
 const proof = {
-    a: ["0x14d6994cfd7b91d300be287ca6bbd80592ad8bdd097b3f05e15addc04115a20a", "0x2780097a84c727a3fba03f30c7931137fbe04efdabdabf726d7e067238ff39e8"],
-    b: [["0x0f2a93a2a0a55ef4cf3caa9f31c9225689bc5a7348f20c7ca1bb0c46ffd3df0a", "0x14b363739ed8c649f2fd001680cedd70f415027c7e1f9e79e07426a640e0a9da"],
-        ["0x18bbb49de0fd32781a6e220ce4a41f23e0f1455b77e59605619926665bf0c941", "0x17bc9c9855472d25aaf2b66772986a8561361af9705f9ed04ee47ccfa8a8e17a"]],
-    c: ["0x1ae66d42ebd922b92e4ca1cd8b62b1ec896b0a629e9b98e63072b482145c683b", "0x07e44704aef1180a80ac66e3544545ce29bd9d9440c769783cf9c6bf7f96ec32"],
-    inputs:[ "0x2f6e27cd0d29ca4b9b6e6db61ff1b61da3549b330ab2a20ec0d9631e290f62f6",
-            "0x0448a124f20e3d56aedc6157c967a43b9bbad690db11da462d0e85a6ace182b2",
-            "0x0442b6fd8d2ee686b8ae1fb6ac7f82dbc82706c2937fa7299e48c82f61a444c0",
-            "0x274dbce8d15179969bc0d49fa725bddf9de555e0ba6a693c6adb52fc9ee7a82c",
-            "0x05ce98c61b05f47fe2eae9a542bd99f6b2e78246231640b54595febfd51eb853",
-            "0x12a111c28a644cfbad11793464dc448ebe3a1c4c965415c9fe060139531704a1",
-            "0x03b2c0e02ad9d172c8deed564553972149075dfa07a9cd4563f3df1ee3fc9343",
-            "0x03a5c4b0163b38ac909f94b0f841141e15dad9fbd76987aab60105d99211a411",
-            "0x247f2262a8ee3a73d452dfcfc20d1dfd04175d8cb018aec42ad8dcf7712ae7ea",
-            "0x18aad37ad7ab569a0eec5ea49747d98604a41a485682f2c6bce9dac8ecd77888",
-            "0x0000000000000000000000000102030405060708091011121314151617181920"],
-  };
+  a: ["0x0eaab1567625b698a9579be2873ce9bf4dc8b369768ef64d9ef9145e3ab2a5f4", "0x26ce6c3c50f6d3c7ab0d9c25818628755cda2960ec1772e4db9264675f3df48e"],
+  b: [["0x08cb8aa60e5f4b9ddfb8a3f27fb250d69f9bec999bcb7f547a541fd98831ad03", "0x21d1eec48a0866d915345768b0da5b8d46c88dc2fcf8c8a9d5a305454e2458c1"],
+      ["0x06cd98bb696185fe988746e4ffc35d42b7fc2774d098b70ac606ba911b805853", "0x034a3f8ba380fbf1621b88ad664c9b129e61122d7c729b724a6170b577baecb7"]],
+  c: ["0x29a8e58d1e370820ab7c093287333e6ceed8b56708f047b1db37a57fba36ccb0", "0x13698c2758716fcfc97258438cc8adfa66731a9891290914ba36bd41ad7fc627"],
+  inputs:[ "0x0f35b130a033a10d021a636717b9c881e9d552e6e974bad03c18b47dbd2995e7",
+          "0x1e6b7ac642d82edfdf550806de7193d126ce6b54fe02dbf326b5270cda87b532",
+          "0x274dbce8d15179969bc0d49fa725bddf9de555e0ba6a693c6adb52fc9ee7a82c",
+          "0x05ce98c61b05f47fe2eae9a542bd99f6b2e78246231640b54595febfd51eb853",
+          "0x1bddd2ee218e2a2eaf8dc4ed626280424a5424197f4e68ff030b21b86a6d8a8f",
+          "0x0b1e3150c37f3349941416396465c569ed015a11bf4d2d98d632dac8f6f17f44",
+          "0x03a5c4b0163b38ac909f94b0f841141e15dad9fbd76987aab60105d99211a411",
+          "0x247f2262a8ee3a73d452dfcfc20d1dfd04175d8cb018aec42ad8dcf7712ae7ea",
+          "0x19779274226c66273b914b6847b206e277eedc0a242bf04c9ce1eb8734d9fb0e",
+          "0x0000000000000000000000000102030405060708091011121314151617181920"],
+};
 
 axios.post(url + '/tx/zkpverifier', proof)
   .then(function (res) {
@@ -29,7 +28,7 @@ axios.post(url + '/tx/zkpverifier', proof)
   })
   .catch(function (error) {
     // handle error
-    console.log(error.res.data);
+    console.log("error:", error.res);
   });
 
 // disableid
@@ -65,12 +64,12 @@ const disableData = {
   msghash: msgHashHex,
   rsv: sigHex,
 };
-axios.post(url + '/tx/disableid', disableData)
-  .then(function (res) {
-    // handle success
-    console.log(res.data);
-  })
-  .catch(function (error) {
-    // handle error
-    console.log(error.response.data);
-  });
+// axios.post(url + '/tx/disableid', disableData)
+//   .then(function (res) {
+//     // handle success
+//     console.log(res.data);
+//   })
+//   .catch(function (error) {
+//     // handle error
+//     console.log(error.response.data);
+//   });
