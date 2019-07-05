@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"math"
 	"math/big"
@@ -229,6 +228,20 @@ func (ethSrv *EthService) GetAuth() (*bind.TransactOpts, error) {
 	return auth, err
 }
 
+func (ethSrv *EthService) GetTx(txHash common.Hash) (*types.Transaction, *types.Receipt, bool, error) {
+	receipt, err := ethSrv.client.TransactionReceipt(context.Background(), txHash)
+	if err != nil {
+		log.Error(err)
+		// return nil, nil, false, err
+	}
+	tx, isPending, err := ethSrv.client.TransactionByHash(context.Background(), txHash)
+	if err != nil {
+		log.Error(err)
+		return nil, nil, false, err
+	}
+	return tx, receipt, isPending, nil
+}
+
 type SampleCallData struct {
 	Addr string `json:"addr"`
 	Data string `json:"dataHex"`
@@ -254,12 +267,10 @@ func (ethSrv *EthService) ForwardTxToSampleContract(d SampleCallData) (*types.Tr
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
 
-	fmt.Println(d.Data)
 	data, err := hex.DecodeString(d.Data[:2])
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(data)
 	var data32 [32]byte
 	copy(data32[:], data)
 
@@ -306,7 +317,6 @@ func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) 
 	// a
 	a0, ok := new(big.Int).SetString(d.A[0], 0)
 	if !ok {
-		fmt.Println(d.A[0])
 		return nil, errors.New("error parsing hex to bigint a[0]")
 	}
 	a1, ok := new(big.Int).SetString(d.A[1], 0)
@@ -351,17 +361,10 @@ func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) 
 	for i, inpStr := range d.Inputs {
 		inp, ok := new(big.Int).SetString(inpStr, 0)
 		if !ok {
-			fmt.Println(inpStr)
-			fmt.Println(inp)
 			return nil, errors.New("error parsing hex to bigint inputs[" + strconv.Itoa(i) + "]")
 		}
 		inputs[i] = inp
 	}
-
-	fmt.Println(a)
-	fmt.Println(b)
-	fmt.Println(c)
-	fmt.Println(inputs)
 
 	ethTx, err := ethSrv.ZKPVerifierContract.Verify(auth, a, b, c, inputs)
 	if err != nil {

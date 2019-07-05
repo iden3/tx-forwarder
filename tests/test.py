@@ -5,6 +5,7 @@
 import json
 import requests
 import provoj
+import time
 
 URL = "http://127.0.0.1:11000/api/unstable"
 
@@ -40,6 +41,15 @@ zkpdata = {
 print(zkpdata)
 r = requests.post(URL + "/tx/zkpverifier", json=zkpdata)
 t.rStatus("zkpverifier post forward tx", r)
+jsonR = r.json()
+print(jsonR)
+
+print(jsonR["ethTx"])
+
+time.sleep(4)
+
+r = requests.get(URL + "/tx/" + jsonR["ethTx"])
+t.rStatus("get tx status", r)
 jsonR = r.json()
 print(jsonR)
 

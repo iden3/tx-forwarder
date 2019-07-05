@@ -3,6 +3,7 @@ Server that forwards the tx to the specified smart contract.
 
 
 ## Usage
+In production use `./tx-forwarder`, in development use `go run main.go` in order to make sure to be running last @master version.
 
 ### Config
 Deploy `sample` smart contract:
@@ -30,6 +31,7 @@ keystore:
 contracts:
         samplecontract: 0xasdf
         zkpverifiercontract: 0xqwerty
+        disableidcontract: 0xzxcvbn
 ```
 
 ### Run

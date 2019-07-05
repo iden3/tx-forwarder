@@ -29,6 +29,7 @@ func serveServiceApi() *http.Server {
 
 	serviceapi := api.Group("/api/unstable")
 	serviceapi.GET("/", handleGetInfo)
+	serviceapi.GET("/tx/:txhash", handleGetTx)
 	serviceapi.POST("/tx/sample", handlePostTxSampleContract)
 	serviceapi.POST("/tx/zkpverifier", handlePostTxZKPVerifier)
 	serviceapi.POST("/tx/disableid", handlePostTxDisableId)

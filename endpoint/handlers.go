@@ -1,6 +1,7 @@
 package endpoint
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 	"github.com/iden3/tx-forwarder/eth"
 	log "github.com/sirupsen/logrus"
@@ -15,6 +16,21 @@ func fail(c *gin.Context, err error) {
 
 func handleGetInfo(c *gin.Context) {
 	c.JSON(200, gin.H{})
+}
+
+func handleGetTx(c *gin.Context) {
+	txHashString := c.Param("txhash")
+	txHash := common.HexToHash(txHashString)
+	tx, receipt, isPending, err := ethsrv.GetTx(txHash)
+	if err != nil {
+		fail(c, err)
+		return
+	}
+	c.JSON(200, gin.H{
+		"tx":        tx,
+		"receipt":   receipt,
+		"isPending": isPending,
+	})
 }
 
 func handlePostTxSampleContract(c *gin.Context) {

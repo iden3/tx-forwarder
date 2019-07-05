@@ -90,6 +90,7 @@ func cmdInfo(c *cli.Context) error {
 	fmt.Println(c)
 	return nil
 }
+
 func cmdDeploySampleContract(c *cli.Context) error {
 	if err := config.MustRead(c); err != nil {
 		return err
@@ -107,6 +108,7 @@ func cmdDeploySampleContract(c *cli.Context) error {
 
 	return nil
 }
+
 func cmdDeployZKPVerifierContract(c *cli.Context) error {
 	if err := config.MustRead(c); err != nil {
 		return err

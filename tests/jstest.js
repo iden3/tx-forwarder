@@ -4,6 +4,19 @@ const bs58 = require('bs58');
 
 const url = 'http://127.0.0.1:11000/api/unstable';
 
+// get tx
+const txid = '0xe991ed8da5d304224d935da6a69aca7fc4c94bb81366479b5a5ff095d2061004';
+axios.get(url + '/tx/' + txid)
+  .then(function (res) {
+    // handle success
+    console.log("tx/:txhash", res.data);
+  })
+  .catch(function (error) {
+    // handle error
+    console.log("error", error.res);
+  });
+
+// zkpverifier
 const proof = {
   a: ["0x0eaab1567625b698a9579be2873ce9bf4dc8b369768ef64d9ef9145e3ab2a5f4", "0x26ce6c3c50f6d3c7ab0d9c25818628755cda2960ec1772e4db9264675f3df48e"],
   b: [["0x08cb8aa60e5f4b9ddfb8a3f27fb250d69f9bec999bcb7f547a541fd98831ad03", "0x21d1eec48a0866d915345768b0da5b8d46c88dc2fcf8c8a9d5a305454e2458c1"],
@@ -23,16 +36,23 @@ const proof = {
 
 axios.post(url + '/tx/zkpverifier', proof)
   .then(function (res) {
-    // handle success
     console.log(res.data);
+    let ethTx = res.data.ethTx;
+    console.log("getting tx", ethTx)
+    // axios.get(url + '/tx/' + ethTx)
+    //   .then(function (res) {
+    //     console.log("tx/:txhash", res.data);
+    //   })
+    //   .catch(function (error) {
+    //     console.log("error", error.res);
+    //   });
   })
   .catch(function (error) {
-    // handle error
     console.log("error:", error.res);
   });
 
-// disableid
 
+// disableid
 const privateKeyHex = '0x0102030405060708091011121314151617181920212223242526272829303132';
 const privateKey = Buffer.from(privateKeyHex.substr(2), 'hex');
 const kopHex = '0x966764905ac3e864c4bad1641659eda209b551b4cd78b08073db328b270a7f11';
@@ -64,12 +84,12 @@ const disableData = {
   msghash: msgHashHex,
   rsv: sigHex,
 };
-// axios.post(url + '/tx/disableid', disableData)
-//   .then(function (res) {
-//     // handle success
-//     console.log(res.data);
-//   })
-//   .catch(function (error) {
-//     // handle error
-//     console.log(error.response.data);
-//   });
+axios.post(url + '/tx/disableid', disableData)
+  .then(function (res) {
+    // handle success
+    console.log(res.data);
+  })
+  .catch(function (error) {
+    // handle error
+    console.log(error.response.data);
+  });
