@@ -6,14 +6,13 @@ Server that forwards the tx to the specified smart contract.
 In production use `./tx-forwarder`, in development use `go run main.go` in order to make sure to be running last @master version.
 
 ### Config
-Deploy `sample` smart contract:
+Deploy needed smart contracts, each one of the commands, will return the contract deployed address, that will be needed to be placed in the `config.yaml`.
 ```
-./tx-forwarder deploysample
-```
-
-Deploy `ZKPVerifier` smart contract:
-```
-./tx-forwarder deployzkpverifier
+./tx-forwarder deploy mimc7
+./tx-forwarder deploy rootcommits
+./tx-forwarder deploy whitelist
+./tx-forwarder deploy zkpverifier
+./tx-forwarder deploy disableid
 ```
 
 This will print the deployed contract address, then copy&paste in the config file `config.yaml`:
@@ -30,8 +29,11 @@ keystore:
         keyjsonpath: /var/config/keystore/UTC-etc
 contracts:
         samplecontract: 0xasdf
-        zkpverifiercontract: 0xqwerty
-        disableidcontract: 0xzxcvbn
+        mimc7contract: 0xasdf
+        rootcommitscontract: 0xasdf
+        whitelistcontract: 0xasdf
+        zkpverifiercontract: 0xasdf
+        disableidcontract: 0xasdf
 ```
 
 ### Run

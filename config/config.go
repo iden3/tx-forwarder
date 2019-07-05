@@ -21,8 +21,16 @@ type Config struct {
 	}
 	Contracts struct {
 		SampleContract      string
-		ZKPVerifierContract string
 		DisableIdContract   string
+		Mimc7Contract       string
+		RootCommitsContract string
+		WhitelistContract   string
+		VerifierContract    string
+		ZKPVerifierContract string
+	}
+	Ids struct {
+		Certifier string
+		Storer    string
 	}
 }
 

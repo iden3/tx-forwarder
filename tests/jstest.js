@@ -84,6 +84,7 @@ const disableData = {
   msghash: msgHashHex,
   rsv: sigHex,
 };
+/*
 axios.post(url + '/tx/disableid', disableData)
   .then(function (res) {
     // handle success
@@ -93,3 +94,4 @@ axios.post(url + '/tx/disableid', disableData)
     // handle error
     console.log(error.response.data);
   });
+  */
