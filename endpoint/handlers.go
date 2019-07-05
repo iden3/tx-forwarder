@@ -86,3 +86,18 @@ func handlePostTxDisableId(c *gin.Context) {
 		"ethTx": ethTx.Hash().Hex(),
 	})
 }
+
+func handleGetIdInWhitelist(c *gin.Context) {
+	ethAddrString := c.Param("ethaddr")
+	ethAddr := common.HexToAddress(ethAddrString)
+
+	res, err := ethsrv.GetIdInWhitelist(ethAddr)
+	if err != nil {
+		fail(c, err)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"inWhitelist": res,
+	})
+}

@@ -33,6 +33,7 @@ func serveServiceApi() *http.Server {
 	serviceapi.POST("/tx/sample", handlePostTxSampleContract)
 	serviceapi.POST("/tx/zkpverifier", handlePostTxZKPVerifier)
 	serviceapi.POST("/tx/disableid", handlePostTxDisableId)
+	serviceapi.GET("/whitelist/:ethaddr", handleGetIdInWhitelist)
 
 	serviceapisrv := &http.Server{Addr: config.C.Server.ServiceApi, Handler: api}
 	go func() {

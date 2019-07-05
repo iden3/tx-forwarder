@@ -79,9 +79,11 @@ func cmdStart(c *cli.Context) error {
 
 	sampleContractAddr := common.HexToAddress(config.C.Contracts.SampleContract)
 	zkpverifierContractAddr := common.HexToAddress(config.C.Contracts.ZKPVerifierContract)
+	whitelistContractAddr := common.HexToAddress(config.C.Contracts.WhitelistContract)
 	disableidContractAddr := common.HexToAddress(config.C.Contracts.DisableIdContract)
 
 	ethSrv.LoadSampleContract(sampleContractAddr)
+	ethSrv.LoadWhitelistContract(whitelistContractAddr)
 	ethSrv.LoadZKPVerifierContract(zkpverifierContractAddr)
 	ethSrv.LoadDisableIdContract(disableidContractAddr)
 

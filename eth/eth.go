@@ -18,26 +18,24 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	common3 "github.com/iden3/go-iden3/common"
+	checkfullcircuitcontract "github.com/iden3/tx-forwarder/eth/contracts/checkfullcircuit"
 	disableid "github.com/iden3/tx-forwarder/eth/contracts/disableid"
 	iden3helperscontract "github.com/iden3/tx-forwarder/eth/contracts/iden3helpers"
 	mimc7contract "github.com/iden3/tx-forwarder/eth/contracts/mimc7"
-	samplecontract "github.com/iden3/tx-forwarder/eth/contracts/samplecontract"
-
-	// zkpverifier "github.com/iden3/tx-forwarder/eth/contracts/zkpverifier"
-	checkfullcircuitcontract "github.com/iden3/tx-forwarder/eth/contracts/checkfullcircuit"
 	rootcommitscontract "github.com/iden3/tx-forwarder/eth/contracts/rootcommits"
+	samplecontract "github.com/iden3/tx-forwarder/eth/contracts/samplecontract"
 	verifiercontract "github.com/iden3/tx-forwarder/eth/contracts/verifier"
 	whitelistcontract "github.com/iden3/tx-forwarder/eth/contracts/whitelist"
 	log "github.com/sirupsen/logrus"
 )
 
 type EthService struct {
-	ks             *keystore.KeyStore
-	acc            *accounts.Account
-	client         *ethclient.Client
-	SampleContract *samplecontract.SampleContract
-	// ZKPVerifierContract         *zkpverifier.CheckFullCircuit
-	CheckFullCircuitContract    *checkfullcircuitcontract.CheckFullCircuit
+	ks                          *keystore.KeyStore
+	acc                         *accounts.Account
+	client                      *ethclient.Client
+	SampleContract              *samplecontract.SampleContract
+	ZKPVerifierContract         *checkfullcircuitcontract.CheckFullCircuit
+	WhitelistContract           *whitelistcontract.Whitelist
 	Mimc7Contract               *disableid.DisableId
 	Iden3HelpersContract        *disableid.DisableId
 	DisableIdContract           *disableid.DisableId
@@ -233,13 +231,23 @@ func (ethSrv *EthService) LoadSampleContract(contractAddr common.Address) {
 	log.Info("Sample contract with address " + contractAddr.String() + " loaded")
 }
 
+func (ethSrv *EthService) LoadWhitelistContract(contractAddr common.Address) {
+	instance, err := whitelistcontract.NewWhitelist(contractAddr, ethSrv.client)
+	if err != nil {
+		log.Error(err.Error())
+	}
+	ethSrv.whitelistContractAddress = contractAddr
+	ethSrv.WhitelistContract = instance
+	log.Info("Whitelist contract with address " + contractAddr.String() + " loaded")
+}
+
 func (ethSrv *EthService) LoadZKPVerifierContract(contractAddr common.Address) {
 	instance, err := checkfullcircuitcontract.NewCheckFullCircuit(contractAddr, ethSrv.client)
 	if err != nil {
 		log.Error(err.Error())
 	}
 	ethSrv.zkpverifierContractAddress = contractAddr
-	ethSrv.CheckFullCircuitContract = instance
+	ethSrv.ZKPVerifierContract = instance
 	log.Info("ZKPVerifier contract with address " + contractAddr.String() + " loaded")
 }
 
@@ -283,6 +291,15 @@ func (ethSrv *EthService) GetTx(txHash common.Hash) (*types.Transaction, *types.
 		return nil, nil, false, err
 	}
 	return tx, receipt, isPending, nil
+}
+
+func (ethSrv *EthService) GetIdInWhitelist(ethAddr common.Address) (bool, error) {
+	res, err := ethSrv.WhitelistContract.IsRegistered(nil, ethAddr)
+	if err != nil {
+		return false, err
+	}
+
+	return res, nil
 }
 
 type SampleCallData struct {
@@ -409,7 +426,7 @@ func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) 
 		inputs[i] = inp
 	}
 
-	ethTx, err := ethSrv.CheckFullCircuitContract.Verify(auth, a, b, c, inputs)
+	ethTx, err := ethSrv.ZKPVerifierContract.Verify(auth, a, b, c, inputs)
 	if err != nil {
 		return nil, err
 	}
@@ -472,7 +489,6 @@ func (ethSrv *EthService) ForwardTxToDisableIdContract(d DisableIdCallData) (*ty
 		return nil, err
 	}
 
-	// ethTx, err := ethSrv.DisableIdContract.DisableIdentity(auth, d.Mtp, id, d.EthAddress, d.MsgHash, d.Rsv)
 	ethTx, err := ethSrv.DisableIdContract.DisableIdentity(auth, mtp, id, ethAddress, msgHash, rsv)
 	if err != nil {
 		return nil, err
