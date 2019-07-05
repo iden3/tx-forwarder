@@ -51,15 +51,15 @@ func handlePostTxSampleContract(c *gin.Context) {
 	})
 }
 
-func handlePostTxZKPVerifier(c *gin.Context) {
-	var d eth.ZKPVerifierCallData
+func handlePostTxFullVerifier(c *gin.Context) {
+	var d eth.FullVerifierCallData
 	err := c.BindJSON(&d)
 	if err != nil {
 		fail(c, err)
 		return
 	}
 
-	ethTx, err := ethsrv.ForwardTxToZKPVerifierContract(d)
+	ethTx, err := ethsrv.ForwardTxToFullVerifierContract(d)
 	if err != nil {
 		fail(c, err)
 		return

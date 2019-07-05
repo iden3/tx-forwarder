@@ -18,7 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	common3 "github.com/iden3/go-iden3/common"
-	checkfullcircuitcontract "github.com/iden3/tx-forwarder/eth/contracts/checkfullcircuit"
+	fullverifiercontract "github.com/iden3/tx-forwarder/eth/contracts/checkfullcircuit"
 	disableid "github.com/iden3/tx-forwarder/eth/contracts/disableid"
 	iden3helperscontract "github.com/iden3/tx-forwarder/eth/contracts/iden3helpers"
 	mimc7contract "github.com/iden3/tx-forwarder/eth/contracts/mimc7"
@@ -34,7 +34,7 @@ type EthService struct {
 	acc                         *accounts.Account
 	client                      *ethclient.Client
 	SampleContract              *samplecontract.SampleContract
-	ZKPVerifierContract         *checkfullcircuitcontract.CheckFullCircuit
+	FullVerifierContract        *fullverifiercontract.CheckFullCircuit
 	WhitelistContract           *whitelistcontract.Whitelist
 	Mimc7Contract               *disableid.DisableId
 	Iden3HelpersContract        *disableid.DisableId
@@ -63,7 +63,7 @@ func (ethSrv *EthService) Account() *accounts.Account {
 func (ethSrv *EthService) SampleContractAddress() common.Address {
 	return ethSrv.sampleContractAddress
 }
-func (ethSrv *EthService) ZKPVerifierContractAddress() common.Address {
+func (ethSrv *EthService) FullVerifierContractAddress() common.Address {
 	return ethSrv.zkpverifierContractAddress
 }
 func (ethSrv *EthService) Mimc7ContractAddress() common.Address {
@@ -126,24 +126,24 @@ func (ethSrv *EthService) DeploySampleContract() (*common.Address, *types.Transa
 	return &address, tx, nil
 }
 
-func (ethSrv *EthService) DeployZKPVerifierContract(smRootCommitsAddr, smWhitelistAddr common.Address, idCertifier, idStorer [31]byte) (*common.Address, *types.Transaction, error) {
+func (ethSrv *EthService) DeployFullVerifierContract(smRootCommitsAddr, smWhitelistAddr common.Address, idCertifier, idStorer [31]byte) (*common.Address, *types.Transaction, *common.Address, *types.Transaction, error) {
 	auth, err := ethSrv.GetAuth()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, nil, err
 	}
-	// deploy smVerifier, smRoots, smWhitelist
-	smVerifierAddr, tx, _, err := verifiercontract.DeployVerifier(auth, ethSrv.client)
+	// deploy smVerifier
+	smVerifierAddr, smVerifierTx, _, err := verifiercontract.DeployVerifier(auth, ethSrv.client)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	address, tx, _, err := checkfullcircuitcontract.DeployCheckFullCircuit(auth, ethSrv.client, smVerifierAddr, smRootCommitsAddr, smWhitelistAddr, idCertifier, idStorer)
+	address, tx, _, err := fullverifiercontract.DeployCheckFullCircuit(auth, ethSrv.client, smVerifierAddr, smRootCommitsAddr, smWhitelistAddr, idCertifier, idStorer)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	ethSrv.zkpverifierContractAddress = address
 
-	return &address, tx, nil
+	return &address, tx, &smVerifierAddr, smVerifierTx, nil
 }
 
 func (ethSrv *EthService) DeployMimc7Contract() (*common.Address, *types.Transaction, error) {
@@ -241,14 +241,14 @@ func (ethSrv *EthService) LoadWhitelistContract(contractAddr common.Address) {
 	log.Info("Whitelist contract with address " + contractAddr.String() + " loaded")
 }
 
-func (ethSrv *EthService) LoadZKPVerifierContract(contractAddr common.Address) {
-	instance, err := checkfullcircuitcontract.NewCheckFullCircuit(contractAddr, ethSrv.client)
+func (ethSrv *EthService) LoadFullVerifierContract(contractAddr common.Address) {
+	instance, err := fullverifiercontract.NewCheckFullCircuit(contractAddr, ethSrv.client)
 	if err != nil {
 		log.Error(err.Error())
 	}
 	ethSrv.zkpverifierContractAddress = contractAddr
-	ethSrv.ZKPVerifierContract = instance
-	log.Info("ZKPVerifier contract with address " + contractAddr.String() + " loaded")
+	ethSrv.FullVerifierContract = instance
+	log.Info("FullVerifier contract with address " + contractAddr.String() + " loaded")
 }
 
 func (ethSrv *EthService) LoadDisableIdContract(contractAddr common.Address) {
@@ -341,14 +341,14 @@ func (ethSrv *EthService) ForwardTxToSampleContract(d SampleCallData) (*types.Tr
 	return ethTx, nil
 }
 
-type ZKPVerifierCallData struct {
+type FullVerifierCallData struct {
 	A      [2]string    `json:"a"`
 	B      [2][2]string `json:"b"`
 	C      [2]string    `json:"c"`
 	Inputs [10]string   `json:"inputs"`
 }
 
-func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) (*types.Transaction, error) {
+func (ethSrv *EthService) ForwardTxToFullVerifierContract(d FullVerifierCallData) (*types.Transaction, error) {
 	nonce, err := ethSrv.Client().PendingNonceAt(context.Background(), ethSrv.acc.Address)
 	if err != nil {
 		return nil, err
@@ -364,8 +364,8 @@ func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) 
 		return nil, err
 	}
 	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
+	auth.Value = big.NewInt(0)      // in wei
+	auth.GasLimit = uint64(3000000) // in units
 	auth.GasPrice = gasPrice
 
 	// zkp verifierinputs
@@ -426,7 +426,7 @@ func (ethSrv *EthService) ForwardTxToZKPVerifierContract(d ZKPVerifierCallData) 
 		inputs[i] = inp
 	}
 
-	ethTx, err := ethSrv.ZKPVerifierContract.Verify(auth, a, b, c, inputs)
+	ethTx, err := ethSrv.FullVerifierContract.Verify(auth, a, b, c, inputs)
 	if err != nil {
 		return nil, err
 	}

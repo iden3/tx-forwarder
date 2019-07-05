@@ -1,7 +1,9 @@
 # tx-forwarder/tests
 Tests to check the `tx-forwarder` endpoints to forward transactions to the smart contracts:
 - SampleContract
-- ZKPVerifier
+- FullVerifier
+- DisableId
+- GetTx
 
 ## pythont tests
 ```

@@ -12,6 +12,6 @@ func handleInfo(c *gin.Context) {
 		"ethBalance":                 balance.String(),
 		"serverAddress":              ethsrv.Account().Address,
 		"sampleContractAddress":      ethsrv.SampleContractAddress().String(),
-		"zkpverifierContractAddress": ethsrv.ZKPVerifierContractAddress().String(),
+		"zkpverifierContractAddress": ethsrv.FullVerifierContractAddress().String(),
 	})
 }

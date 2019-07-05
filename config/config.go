@@ -20,13 +20,12 @@ type Config struct {
 		KeyJsonPath string
 	}
 	Contracts struct {
-		SampleContract      string
-		DisableIdContract   string
-		Mimc7Contract       string
-		RootCommitsContract string
-		WhitelistContract   string
-		VerifierContract    string
-		ZKPVerifierContract string
+		SampleContract       string
+		DisableIdContract    string
+		Mimc7Contract        string
+		RootCommitsContract  string
+		WhitelistContract    string
+		FullVerifierContract string
 	}
 	Ids struct {
 		Certifier string

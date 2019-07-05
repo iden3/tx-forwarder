@@ -54,10 +54,10 @@ var ServerCommands = []cli.Command{
 				Action:  cmdDeployWhitelistContract,
 			},
 			{
-				Name:    "zkpverifier",
+				Name:    "fullverifier",
 				Aliases: []string{},
-				Usage:   "deploy zkpverifier contract",
-				Action:  cmdDeployZKPVerifierContract,
+				Usage:   "deploy fullverifier contract",
+				Action:  cmdDeployFullVerifierContract,
 			},
 			{
 				Name:    "disableid",
@@ -78,13 +78,13 @@ func cmdStart(c *cli.Context) error {
 	ethSrv := config.LoadWeb3(ks, &acc)
 
 	sampleContractAddr := common.HexToAddress(config.C.Contracts.SampleContract)
-	zkpverifierContractAddr := common.HexToAddress(config.C.Contracts.ZKPVerifierContract)
+	zkpverifierContractAddr := common.HexToAddress(config.C.Contracts.FullVerifierContract)
 	whitelistContractAddr := common.HexToAddress(config.C.Contracts.WhitelistContract)
 	disableidContractAddr := common.HexToAddress(config.C.Contracts.DisableIdContract)
 
 	ethSrv.LoadSampleContract(sampleContractAddr)
 	ethSrv.LoadWhitelistContract(whitelistContractAddr)
-	ethSrv.LoadZKPVerifierContract(zkpverifierContractAddr)
+	ethSrv.LoadFullVerifierContract(zkpverifierContractAddr)
 	ethSrv.LoadDisableIdContract(disableidContractAddr)
 
 	endpoint.Serve(ethSrv)
@@ -162,7 +162,7 @@ func cmdDeployWhitelistContract(c *cli.Context) error {
 	return nil
 }
 
-func cmdDeployZKPVerifierContract(c *cli.Context) error {
+func cmdDeployFullVerifierContract(c *cli.Context) error {
 	if err := config.MustRead(c); err != nil {
 		return err
 	}
@@ -181,11 +181,13 @@ func cmdDeployZKPVerifierContract(c *cli.Context) error {
 		return err
 	}
 
-	contractAddress, tx, err := ethSrv.DeployZKPVerifierContract(rootcommitsContract, whitelistContract, idCertifier, idStorer)
+	contractAddress, tx, smVerifierAddr, smVerifierTx, err := ethSrv.DeployFullVerifierContract(rootcommitsContract, whitelistContract, idCertifier, idStorer)
 	if err != nil {
 		return err
 	}
-	log.Info("zkpverifier contract deployed at address: " + contractAddress.Hex())
+	log.Info("zkverifier contract deployed at address: " + smVerifierAddr.Hex())
+	log.Info("deployment transaction: " + smVerifierTx.Hash().Hex())
+	log.Info("fullverifier contract deployed at address: " + contractAddress.Hex())
 	log.Info("deployment transaction: " + tx.Hash().Hex())
 
 	return nil

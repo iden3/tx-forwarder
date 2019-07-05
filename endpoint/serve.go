@@ -31,7 +31,7 @@ func serveServiceApi() *http.Server {
 	serviceapi.GET("/", handleGetInfo)
 	serviceapi.GET("/tx/:txhash", handleGetTx)
 	serviceapi.POST("/tx/sample", handlePostTxSampleContract)
-	serviceapi.POST("/tx/zkpverifier", handlePostTxZKPVerifier)
+	serviceapi.POST("/tx/zkpverifier", handlePostTxFullVerifier)
 	serviceapi.POST("/tx/disableid", handlePostTxDisableId)
 	serviceapi.GET("/whitelist/:ethaddr", handleGetIdInWhitelist)
 

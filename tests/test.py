@@ -21,7 +21,7 @@ jsonR = r.json()
 print(jsonR)
 
 
-# ZKPVerifier contract forward
+# FullVerifier contract forward
 zkpdata = {
         "a": ["0x14d6994cfd7b91d300be287ca6bbd80592ad8bdd097b3f05e15addc04115a20a", "0x2780097a84c727a3fba03f30c7931137fbe04efdabdabf726d7e067238ff39e8"],
     "b": [["0x0f2a93a2a0a55ef4cf3caa9f31c9225689bc5a7348f20c7ca1bb0c46ffd3df0a", "0x14b363739ed8c649f2fd001680cedd70f415027c7e1f9e79e07426a640e0a9da"],
